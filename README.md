@@ -1,7 +1,7 @@
 ---
 description: 关于对象（Object Lessons）
 cover: >-
-  .gitbook/assets/menitrust_painting_of_a_flatland_with_less_vegetation_at_sunse_b8b95c0c-9e95-4aa6-997d-13c6263db7db.png
+  Chapter_1/.gitbook/assets/menitrust_painting_of_a_flatland_with_less_vegetation_at_sunse_b8b95c0c-9e95-4aa6-997d-13c6263db7db.png
 coverY: 67.16463414634143
 layout:
   cover:
@@ -49,7 +49,7 @@ Point3d 是一个抽象数据类型，主要体现在：
 * **明确的接口：**Point3d 提供了易用的接口（`x()`, `y()`, `z()`），用于访问坐标值。用户不需要知道内部 \_x, \_y, 和 \_z 的存储方式，接口抽象了数据的细节
 * **抽象性：**Point3d 的设计将 “点” 作为一个抽象的数学概念，通过类封装具体的实现（如使用浮点数表示坐标）
 
-> 将 struct Point3d 转换到 class Point3d 后，会有这样一个疑问：加上了封装之后，布局成本增加了多少？
+> **将 struct Point3d 转换到 class Point3d 后，会有这样一个疑问：加上了封装之后，布局成本增加了多少？**
 
 **答案是：并没有增加成本**
 
@@ -60,6 +60,5 @@ Point3d 是一个抽象数据类型，主要体现在：
 C++在布局以及存取时间上的主要的额外负担是由 virtual 引起的，包括：
 
 * **virtual function 机制：**用以支持一个有效率的“执行期绑定” （也就是我们熟知的多态）
-* **virtual base class ：**用以实现“多次出现在继承体系中的 base class，有一个单一而被共享的实例”。**（虚继承）**
+* **virtual base class ：用以实现“多次出现在继承体系中的 base class，有一个单一而被共享的实例”。（虚继承）**
 {% endhint %}
-
