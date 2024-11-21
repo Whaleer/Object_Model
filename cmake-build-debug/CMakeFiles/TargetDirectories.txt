@@ -1,0 +1,3 @@
+/Users/bingxil/Desktop/Coding/CPP/Basic Code/CPP_object_model/cmake-build-debug/CMakeFiles/CPP_object_model.dir
+/Users/bingxil/Desktop/Coding/CPP/Basic Code/CPP_object_model/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/bingxil/Desktop/Coding/CPP/Basic Code/CPP_object_model/cmake-build-debug/CMakeFiles/rebuild_cache.dir
