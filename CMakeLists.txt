@@ -4,5 +4,5 @@ project(CPP_object_model)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(CPP_object_model
-        chaper_1/01_point3d.c
-        chaper_1/01_point3d.cpp)
+        Chapter_1/01_point3d.c
+        Chapter_1/01_point3d.cpp)
