@@ -1,0 +1,6 @@
+root: ./
+
+structure:
+  readme: Chapter_1/README.md
+  summary: SUMMARY.md
+
