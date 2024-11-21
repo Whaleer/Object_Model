@@ -1,12 +1,6 @@
 ---
 description: 关于对象（Object Lessons）
-cover: >-
-  Chapter_1/.gitbook/assets/menitrust_painting_of_a_flatland_with_less_vegetation_at_sunse_b8b95c0c-9e95-4aa6-997d-13c6263db7db.png
-coverY: 67.16463414634143
 layout:
-  cover:
-    visible: true
-    size: full
   title:
     visible: true
   description:
@@ -60,5 +54,26 @@ Point3d 是一个抽象数据类型，主要体现在：
 C++在布局以及存取时间上的主要的额外负担是由 virtual 引起的，包括：
 
 * **virtual function 机制：**用以支持一个有效率的“执行期绑定” （也就是我们熟知的多态）
-* **virtual base class ：用以实现“多次出现在继承体系中的 base class，有一个单一而被共享的实例”。（虚继承）**
+* **virtual base class ：**用以实现“多次出现在继承体系中的 base class，有一个单一而被共享的实例”。（虚继承）
 {% endhint %}
+
+### 1.3 C++ 对象模式
+
+**两种 class data members ：**static 和 non-static
+
+**三种 class member functions：**static, non-static, virtual
+
+<mark style="color:blue;">**C++ 对象模型：**</mark>\
+<mark style="color:blue;">- non-static data members 被置于每一个 class object 之内</mark>\ <mark style="color:blue;">- static data members 被存放在个别的 class object 之外</mark>\ <mark style="color:blue;">- static 和 non-static function members 也被放在个别的 class object 之外</mark>
+
+这里的 **「存放在个别的 class object 之外」 的意思就是：**不属于任何单个类对象，而是属于整个类，并且所有该类的对象共享这份静态数据
+
+<mark style="color:blue;">**C++ 对象模型中的 virtual function：**</mark>\
+<mark style="color:blue;">- 每一个 class 一堆指向 virtual functions 的指针，放在称为</mark> <mark style="color:blue;"></mark><mark style="color:blue;">**virtual table （vtbl）**</mark><mark style="color:blue;">的表格中</mark>\ <mark style="color:blue;">- 每一个 class object 被安插一个指针，指向相关的 virtual table。这个指针被称为</mark> <mark style="color:blue;"></mark><mark style="color:blue;">**vptr。**</mark><mark style="color:blue;">vptr 的设定和重置都由每一个 class 的 constructor、destructor 和 copy assignment 运算符自动完成。 每一个 class 所关联的</mark> <mark style="color:blue;"></mark>_<mark style="color:blue;">type\_info</mark>_ <mark style="color:blue;"></mark><mark style="color:blue;">object (用以支持 runtime type identification， RTTI)也经由 virtual table 被指出来，</mark><mark style="color:blue;">**通常放在表格的第一个 slot。**</mark>
+
+
+
+
+
+
+
