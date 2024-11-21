@@ -35,19 +35,6 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always"
-				}
-			],
-			"language" : "C",
-			"sourceIndexes" : 
-			[
-				0
-			]
-		},
-		{
-			"compileCommandFragments" : 
-			[
-				{
 					"fragment" : "-g -std=gnu++14 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always"
 				}
 			],
@@ -60,6 +47,19 @@
 				],
 				"standard" : "14"
 			},
+			"sourceIndexes" : 
+			[
+				0
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always"
+				}
+			],
+			"language" : "C",
 			"sourceIndexes" : 
 			[
 				1
@@ -105,13 +105,13 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "chaper_1/01_point3d.c",
+			"path" : "Chapter_1/01_point3d.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 1,
-			"path" : "chaper_1/01_point3d.cpp",
+			"path" : "Chapter_1/01_point3d.c",
 			"sourceGroupIndex" : 0
 		}
 	],

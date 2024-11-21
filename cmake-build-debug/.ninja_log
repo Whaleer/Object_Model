@@ -1,4 +1,7 @@
 # ninja log v5
 2	413	1732177460650003622	CMakeFiles/CPP_object_model.dir/chaper_1/01_point3d.cpp.o	835f3e45ec9426ca
-254	380	1732177844647065545	CPP_object_model	516513718adebd8c
+1	312	1732181021442131161	CMakeFiles/CPP_object_model.dir/Chapter_1/01_point3d.c.o	934fa03d539c9f4
+1	142	1732182387272956403	CPP_object_model	869101231a4be5b1
+4	441	1732181759561819077	CMakeFiles/CPP_object_model.dir/Chapter_1/01_point3d.cpp.o	c0587fa0825673ca
 1	253	1732177844519908605	CMakeFiles/CPP_object_model.dir/chaper_1/01_point3d.c.o	4bc7530d78ea8da
+4	274	1732182421445381764	CMakeFiles/CPP_object_model.dir/Chapter_1/01_point3d.c.o	934fa03d539c9f4
