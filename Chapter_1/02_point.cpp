@@ -16,4 +16,9 @@ protected:
     static int _point_count;
 };
 
+int main(){
+    cout << sizeof(Point) << endl;
+    return 0;
+}
+
 
