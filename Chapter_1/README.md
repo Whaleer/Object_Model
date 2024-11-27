@@ -1,5 +1,6 @@
 ---
 description: 关于对象（Object Lessons）
+icon: flower-daffodil
 layout:
   title:
     visible: true
@@ -13,7 +14,7 @@ layout:
     visible: true
 ---
 
-# 🌷 Chapter One：关于对象
+# Chapter 1：关于对象
 
 > **C++ 的抽象数据类型（Abstract Data Type，ADT）是什么？**
 
