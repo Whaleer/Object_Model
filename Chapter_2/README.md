@@ -1,6 +1,6 @@
 ---
-description: The Semantics of Constructions
 icon: flower
+description: The Semantics of Constructions
 ---
 
 # Chapter 2：构造函数语意学
@@ -155,7 +155,114 @@ C++要求以 member objects 在 class 中的声明顺序来调用各个 construc
 另有两种情况，也需要合成出 default constructor:
 
 1. class 声明（或继承）一个 virtual constructor。
-2. class 派生自一个
+2. class 派生自一个继承串链，其中有一个或更多的 virtual base class。
+
+```cpp
+class Widget {
+public:
+    virtual void flip() = 0;
+};
+
+class Bell : public Widget {
+public:
+    void flip() {
+        cout << "Ding!" << endl;
+    }
+};
+
+class Whistle : public Widget {
+public:
+    void flip() {
+        cout << "Ta-da!" << endl;
+    }
+};
+
+void flip( Widget &weight) {
+    weight.flip();
+}
+
+void foo() {
+    Bell b;
+    Whistle w;
+
+    flip(b);
+    flip(w);
+}
+
+```
+
+为了让这个机制发挥功效，编译器必须为每一个 Widget（或其派生类的）object 的 vptr 设定初值，放置适当的 virtual table地址。
+
+对于 class 所定义的每一个 constructor，编译器会安插一些代码来做这样的事情。
+
+对于那些未声明任何 constructors 的 classes，编译器会为它们合成一个 default constructor， 以便正确地初始化每一个 class object 的 vptr。
+
+#### 4. “带有一个 Virtual Base Class” 的 Class
+
+```cpp
+class X{ public: int i;};
+class A: public virtual X{public: int j;};
+class B: public virtual X{public: double d;};
+class C: public A, public B{public: int k;};
+
+void foo(A* pa){
+    pa->i = 1024;
+}
+
+int main(){
+    foo(new A);
+    foo(new C);
+    return 0;
+}
+```
+
+使用**虚继承（virtual inheritance）时**，基类的数据成员（例如 `X::i`）的<mark style="background-color:blue;">**内存布局不再是固定的**</mark>。原因在于：
+
+* 虚继承允许多个派生类**共享基类的唯一实例，避免传统继承中的菱形继承问题（重复继承导致多个相同基类的实例）。**
+* 为了实现这一点，派生类必须引入一种机制，使得在运行时可以准确地找到虚基类的唯一实例。
+
+A 和 B 都虚继承了 X：这意味着 **X 的成员（如 i）在 C 中只有一个共享实例。**
+
+在 `foo(A* pa)` 中，pa 的动态类型可能是 A\* 或 C\*，这会影响到 pa->i 的实际存取位置
+
+**动态偏移问题：**
+
+由于虚继承，`X::i` 的实际位置在内存中无法在编译期确定：
+
+• 如果 pa 指向 A 的实例，`X::i` 的位置可以直接通过 A 中的虚继承指针找到。
+
+• 如果 pa 指向 C 的实例，`X::i` 的位置需要通过 C 中指向 X 的虚继承表（vtable）中的指针找到。
+
+因此，编译器需要一种机制来在运行时定位虚基类的成员 `X::i`
+
+`foo()` 可以被改写如下：
+
+```cpp
+void foo(A * pa){
+    pa->_vbcX->i = 1024;
+}
+```
+
+`_vbcX` 表示编译器所产生的指针，指向 virtual base class X。
+
+`_vbcX`（或编译器所做出的某个什么东西）是在 class object 构造期间被完成的。对于 class 所定义的每一个 constructor，**编译器会安插那些“允许每一个 virtual base class 的执行期存取操作”的代码**。如果 class 没有声明任何 constructors，编译器必须它合成一个 default constructor。
+
+{% hint style="info" %}
+**C++新手一般有两个常见的误解：**
+
+1. 任何 class 如果没有定义 default constructor，就会被合成出一个来。
+2. 编译器合成出来的 default constructor 会显式设定 “class 内每一个 data member 的默认值”。
+{% endhint %}
+
+&#x20;如你所见，没有一个是真的！
+
+***
+
+### 2.2 Copy Constructor 的构造操作
+
+
+
+
 
 
 
