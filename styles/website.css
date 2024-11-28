@@ -1,0 +1,11 @@
+/* 调整内容区域的宽度 */
+.book {
+    max-width: 1200px; /* 设置最大宽度 */
+    margin: 0 auto;    /* 居中对齐 */
+}
+
+/* 如果需要调整正文部分 */
+.book-body .body-inner {
+    max-width: 800px;
+    margin: 0 auto;
+}
