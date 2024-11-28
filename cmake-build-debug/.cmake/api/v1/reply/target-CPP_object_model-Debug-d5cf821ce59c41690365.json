@@ -51,19 +51,6 @@
 			[
 				0
 			]
-		},
-		{
-			"compileCommandFragments" : 
-			[
-				{
-					"fragment" : "-g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always"
-				}
-			],
-			"language" : "C",
-			"sourceIndexes" : 
-			[
-				1
-			]
 		}
 	],
 	"id" : "CPP_object_model::@6890427a1f51a3e7e1df",
@@ -95,8 +82,7 @@
 			"name" : "Source Files",
 			"sourceIndexes" : 
 			[
-				0,
-				1
+				0
 			]
 		}
 	],
@@ -105,13 +91,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "Chapter_1/01_point3d.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 1,
-			"path" : "Chapter_1/01_point3d.c",
+			"path" : "Chapter_2/05_bitwise_copy_semantics.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

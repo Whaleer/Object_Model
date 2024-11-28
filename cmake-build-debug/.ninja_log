@@ -1,7 +1,16 @@
 # ninja log v5
 2	413	1732177460650003622	CMakeFiles/CPP_object_model.dir/chaper_1/01_point3d.cpp.o	835f3e45ec9426ca
-1	312	1732181021442131161	CMakeFiles/CPP_object_model.dir/Chapter_1/01_point3d.c.o	934fa03d539c9f4
-1	142	1732182387272956403	CPP_object_model	869101231a4be5b1
-4	441	1732181759561819077	CMakeFiles/CPP_object_model.dir/Chapter_1/01_point3d.cpp.o	c0587fa0825673ca
+2	462	1732251149532950916	CMakeFiles/CPP_object_model.dir/Chapter_1/01_point3d.cpp.o	c0587fa0825673ca
+730	904	1732439489571482331	CPP_object_model	cbe97ee74cfb0477
+3	470	1732279343165518932	CMakeFiles/CPP_object_model.dir/Chapter_1/03_object_distinction.cpp.o	7256a2e804ff4bc4
 1	253	1732177844519908605	CMakeFiles/CPP_object_model.dir/chaper_1/01_point3d.c.o	4bc7530d78ea8da
+1	67	1732762880492664048	build.ninja	2d886e5860b73b16
 4	274	1732182421445381764	CMakeFiles/CPP_object_model.dir/Chapter_1/01_point3d.c.o	934fa03d539c9f4
+2	327	1732251267996543546	CMakeFiles/CPP_object_model.dir/Chapter_1/02_point.cpp.o	38f58aafd21d073e
+5	730	1732439489398180168	CMakeFiles/CPP_object_model.dir/Chapter_1/04_pointer.cpp.o	70f3f311d548ba16
+1	334	1732762955750084593	CMakeFiles/CPP_object_model.dir/Chapter_2/05_bitwise_copy_semantics.cpp.o	944bd03f097a730f
+334	405	1732762955822194545	CPP_object_model	713f10a618dc30df
+1	304	1732763025286377500	CMakeFiles/CPP_object_model.dir/Chapter_2/05_bitwise_copy_semantics.cpp.o	944bd03f097a730f
+304	366	1732763025347715150	CPP_object_model	713f10a618dc30df
+2	357	1732763186907456242	CMakeFiles/CPP_object_model.dir/Chapter_2/05_bitwise_copy_semantics.cpp.o	944bd03f097a730f
+357	422	1732763186977756469	CPP_object_model	713f10a618dc30df
