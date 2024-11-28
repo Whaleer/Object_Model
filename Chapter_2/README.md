@@ -5,7 +5,7 @@ description: The Semantics of Constructions
 
 # Chapter 2：构造函数语意学
 
-### 2.1 Default Constructor 的构造操作
+## 2.1 Default Constructor 的构造操作
 
 > **编译器何时会生成默认构造函数？**
 
@@ -258,7 +258,251 @@ void foo(A * pa){
 
 ***
 
-### 2.2 Copy Constructor 的构造操作
+## 2.2 Copy Constructor 的构造操作
+
+有三种情况，会以一个 object 的内容作为另一个 class object 的初值。
+
+{% stepper %}
+{% step %}
+### 显式地以一个 object 的内容作为另一个 class object 的初值
+
+```cpp
+Class X{...};
+X x_1;
+X x_2 = x_1;
+```
+{% endstep %}
+
+{% step %}
+### object 作为参数传递给某个函数时
+
+```cpp
+extern void foo(X x);
+void bar(){
+    X xx;
+    foo(xx);
+}
+```
+{% endstep %}
+
+{% step %}
+### 当函数返回一个 class object 时
+
+```cpp
+X foo_bar(){
+    X xx;
+    return xx;
+}
+```
+{% endstep %}
+{% endstepper %}
+
+### default memberwise Initialization
+
+**如果 class 没有提供一个 explicit copy constructor 又当如何？**
+
+当 class object 以“相同 class 的另一个 object”作为初值，其内部是以所谓的 default memberwise initialization 手法完成的，也就是把每一个内建的或派生的 data member（例如一个指针或一个数组）的值，从某个 object 拷贝一份到另一个 object 身上。
+
+<mark style="background-color:blue;">**不过它并不会拷贝其中的 member class object，而是以递归的方式施行 memberwise initialization。**</mark>例如，考虑下面这个 class 声明：
+
+```cpp
+class Word{
+private:
+    int _occurs;
+    String _word;
+};
+```
+
+Word object 的 default memberwise Initialization 的方式如下：
+
+1. 拷贝 member `_occurs`。
+2. 在 String 类型的 member object `_word` 身上递归实施 memberwise Initialization。
+
+{% hint style="success" %}
+Default constructors 和 copy constructors 在必要的时候才会由编译器产生出来
+{% endhint %}
+
+**决定一个 copy constructors 是否为 trivial 的标准在于 class 是否展现出所谓的 "bitwise copy semantics"。**
+
+### Bitwise Copy Semantics(位逐次拷贝)
+
+```cpp
+class Word{
+public:
+    Word(const char * s):str(new char[strlen(s)+1]){
+        strcpy(str,s);
+        cnt = 1;
+    }
+    ~Word(){
+        delete [] str;
+    }
+private:
+    int cnt;
+    char * str;
+};
+```
+
+**这段代码展现了 bitwise copy semantics。**
+
+此时，编译器就不会为我们产生 Default constructors 和 copy constructors&#x20;
+
+这时候，这种 bitwise copy 构造的类就会存在一个问题，就是**对于指针变量来说，源类中的指针变量保存的是开辟的空间，而目标类中的的指针变量，是通过逐位复制的方式得到的，这样， 目标类中的指针变量保存的地址和源类的是一样的。**&#x5F53;源类释放空间之后，目标类中的指针变量指的是一堆无意义的空间，这样，当目标类中的指针变量再释放空间的时候，就会报错。
+
+但是，如果 class Word 的声明是下面这种情况
+
+```cpp
+class String {
+public:
+    String(const char *);
+    String(const String &);
+    ~String();
+};
+
+class Word {
+public:
+    Word(const String &s) : str(s), cnt(1) {}
+    ~Word();
+private:
+    int cnt;
+    String str;
+};
+```
+
+这种情况下，并没有展现出 bitwise copy semantics。
+
+这种情况下，编译器必须合成出一个 copy constructor, 以便调用member class String object 的 copy constructo。
+
+```cpp
+inline Word::Word(const Word& wd){
+    str.String::String(wd.str);
+    cnt = wd.cnt;
+}
+```
+
+{% hint style="success" %}
+有一点很值得注意：被合成出来的 copy contructor 中，如整数，指针，数组等等的 nonclass members 也都会被复制。
+{% endhint %}
+
+### 不要 Bitwise Copy Semantics!
+
+有4种情况，**class 不会展现出 bitwise copy semantics**
+
+1. 当 class 内含一个 member object 而后者的 class 声明有一个 copy constructor时（不论是被class 设计者显式地声明，就像前面的String 那样；或是被编译器合成，像 class Word 那样）。
+2. 当 class 继承自一个 base class 而后者存在一个 copy constructor 时（再次强调，不论是被显式声明或是被合成而得）。
+3. 当 class 声明了一个或多个 virtual functions 时。
+4. 当 class 派生自一个继承串链，其中有一个或多个 virtual base classes 时。&#x20;
+
+在前两种情况中，编译器必须将 member 或 base class 的 “copy constructors 调用操作” 安插到被合成的 copy constructor 中。**前一节 class Word的 “合成而得的copy constructor” 正足以说明情况1。**
+
+情况3和4有点复杂，接下来讨论。
+
+### 重新设定 Virtual Table 的指针
+
+只要有一个 class 声明了一个或者多个 virtual function, 就会有下面的操作：
+
+* 增加一个 virtual function table(vtbl), 内含每一个有作用的 virtual function 的地址
+* 一个指向 virtual function table 的指针(vptr)，安插在每一个 class object 内
+
+```cpp
+class ZooAnimal {
+public:
+    ZooAnimal() {};
+    virtual ~ZooAnimal() {};
+    virtual void animate();
+    virtual void draw();
+private:
+    // ZooAnimal 的 animate() 和 draw() 函数所需要的数据
+};
+
+class Bear : public ZooAnimal {
+public:
+    Bear() {};
+    ~Bear() {};
+    void animate();
+    void draw();
+    virtual void dance();
+private:
+    // Bear 的 animate() 和 draw() 和 dance() 函数所需要的数据
+};
+
+```
+
+```cpp
+Bear yogi;
+Bear winnie = yogi;
+```
+
+yogi 会被 default Bear constructor 初始化。而在 constructor 中，yogi 的 vptr 被设定指向 Bear class 的 virtual table（靠编译器安插的代码完成）。因此，把yogi的 vptr 值拷贝给 winnie 的 vptr 是安全的。
+
+<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p>yogi 和 winnie 的关系</p></figcaption></figure>
+
+当一个 base class object 以其 derived class 的 object 内容做初始化操作时，其 vptr 复制操作也必须保证安全，例如：
+
+```cpp
+ZooAnimal franny = yogi; // 这里会发生切割行为
+```
+
+franny 的 vptr 不可以被设定指向 Bear class 的 virtual table（但如果 yogi 的 vtpr 被直接 "bitwise copy" 的话，就会导致此结果），否则当下面程序片段中的 draw() 被调用而 franny 被传进去时，就会“炸毁”:
+
+```cpp
+void draw(const ZooAnimal& zoey){
+    zoey.draw();
+}
+
+void foo(){
+    // franny 的 vptr 指向 ZooAnimal 的 virtual table,
+    // 而非 Bear 的 virtual table.
+    ZooAnimal franny = yogi;
+    draw(yogi);   // 调用 Bear::draw();
+    draw(franny); // 调用 ZooAnimal::draw();
+}
+```
+
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+通过 franny 调用 virtual function `draw()`，调用的是 ZooAnimal 实例而非 Bear 实例（甚至虽然 franny是以 Bear object yogi 作为初值），因为 franny 是一个 ZooAnimal object。
+
+事实上，yogi 中的Bear 部分已经在 franny初始化时被切割（sliced）掉了。如果 franny被声明为一个reference（或如果它是一个指针，而其值为yogi 的地址），那么经由 franny 所调用的 draw0才会是 Bear 的函数实例。
+
+<mark style="background-color:blue;">**也就是说，合成出来的 ZooAnimal copy constructor 会显式设定 obejct 的 vptr 指向 ZooAnimal class 的 virtual table。而不是直接从右边的 class object 中将其 vptr 现值拷贝过来**</mark>
+
+### 处理 Virtual Base Class Subobject
+
+```cpp
+class ZooAnimal {
+public:
+    ZooAnimal() {};
+    virtual ~ZooAnimal() {};
+    virtual void animate();
+    virtual void draw();
+private:
+    // ZooAnimal 的 animate() 和 draw() 函数所需要的数据
+};
+
+class Raccoon: public virtual ZooAnimal{
+public:
+    Raccoon() {};
+    Raccoon(int x) {};
+};
+```
+
+这段代码中，ZooAnimal 成为 Raccoon 的一个 virtual base class
+
+***
+
+## 2.3 程序转化语意学
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
