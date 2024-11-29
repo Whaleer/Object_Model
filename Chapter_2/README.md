@@ -492,6 +492,208 @@ public:
 
 ## 2.3 程序转化语意学
 
+### 显式的初始化操作(Explict Initialization)
+
+已知有这样的定义：`X x0;`
+
+下面的三个定义，每一个都明显地以 `x0` 来初始化其 class object:
+
+```cpp
+void foo_bar(){
+    X x1(x0);        // 直接初始化
+    X x2 = x0;       // 拷贝初始化
+    X x3 = X(x0);    // 拷贝初始化，先构造一个临时对象，再拷贝到 x3
+}
+```
+
+必要的程序转化有两个阶段：[^1]
+
+1. 重写每一个定义，**其中的初始化操作会被剥除。**（译注：这里所谓的“定义”是指上述的x1，×2，×3三行；在严谨的C++用词中，<mark style="background-color:blue;">**“定义”是指“占用内存”的行为。）**</mark>
+2. class 的 copy constructor 调用操作会被安插进去。
+
+这三种写法看起来不同，但它们的共同点是：都使用 x0 来初始化对象，最终都需要调用 拷贝构造函数。
+
+**编译器的任务是将它们“转换为明确的操作”，即显式地插入对拷贝构造函数的调用。**
+
+> **「剥除初始化操作」 如何理解？**
+
+在这个阶段，编译器会去掉初始化的表面语法（如括号或赋值符号），并将其理解为对应的构造函数调用
+
+一旦完成了初始化操作的“剥除”，编译器会明确插入对 拷贝构造函数 的调用，以便真正实现对象的初始化
+
+所以，经过上面两个步骤的初始化之后， `foo_bar()` 可能看起来如下：
+
+```cpp
+void foo_bar(){
+    X x1;
+    X x2;
+    X x3;
+    
+    // 编译器安插 X copy construction 的调用操作
+    x1.X::X(x0);
+    x2.X::X(x0);
+    x3.X::X(x0);
+}
+```
+
+其中的 `x1.X::X(x0);` 就表现出对以下的 copy constructor 的调用：
+
+```cpp
+X::X(const X& xx);
+```
+
+### 参数的初始化(Argument Initialization)
+
+C++ Standard ：把一个 class object 当作参数传给一个函数（或是作为一个函数的返回值），相当于以下形式的初始化操作：
+
+```cpp
+X xx = arg;
+```
+
+其中 `xx` 代表形式参数（或返回值）， `arg` 代表真正的参数值。
+
+```cpp
+void foo(X x0);
+X xx;
+foo(xx);
+```
+
+那么这种调用方式，将会要求局部实例 `x0` 以 memberwise 的方式将 `xx` 当作初值。&#x20;
+
+编译器的一种实现策略是导入所谓的临时性 object，并调用 copy constructor 将它初始化，然后将此临时性 object 交给函数，转化如下：
+
+```cpp
+X _temp0;
+_temp0.X::X(xx);
+foo(_temp0);
+```
+
+### 返回值的初始化(Return Value Initialization)
+
+```cpp
+X bar(){
+    X xx;
+    return xx;
+}
+```
+
+转化如下：
+
+1. 首先加上一个额外参数，类型是 class object 的一个 reference, 这个参数将用来放置被“拷贝构建”而得到的返回值
+2. 在 return 指令之前安插一个 copy constructor 调用操作，以便将欲传回的 object 的内容当作上述新增参数的初值
+
+```cpp
+void bar(X & _result){
+    X xx;
+    
+    // 编译所产生的 default constructor 调用操作
+    xx.X::X();
+    
+    // 编译所产生的 copy constructor 调用操作
+    _result.X::XX(xx);
+    
+    return;
+}
+```
+
+### Copy Constructor : 要还是不要？
+
+```cpp
+class Point3d{
+public:
+    Point3d(float x, float y, float z);
+private:
+    float _x,_y,_z;
+}
+```
+
+这个 class 的 default copy constructor 被视为 trivial。
+
+它没有任何 member class object 带有 copy constructor, 也没有任何的 virtual base class 或者 virtual function。所以，默认情况下，一个 Point3d class object 的 memberwise 初始化操作会导致 bitwise copy。并且是安全的。
+
+## 2.4 成员们的初始化队伍(Member Initialization List)
+
+**必须使用 member initialization list 的4种情况：**
+
+* 当初始化一个 reference member 时
+* 当初始化一个 const member 时
+* 当调用一个 base class 的 constructor，而它拥有一组参数时
+* 当调用一个 member class 的 constructor, 而它拥有一组参数时
+
+```cpp
+class Word{
+    String _name;
+    int _cnt;
+public:
+    Word(){
+        _name = 0;
+        _cnt = 0;
+    }
+}
+```
+
+扩张方式如下：
+
+```cpp
+Word::Word(){
+    _name.String::String();  // 调用 String 的 default constructor
+    String temp = String(0); // 产生临时性对象
+    _name.String::operator=(temp); // memberwise 拷贝 _name
+    temp.String::~String();  // 摧毁临时对象
+    
+    _cnt = 0;
+}
+```
+
+更有效率的一种方式：
+
+```cpp
+// 较好的方式
+Word::Word:_name(0){
+    _cnt = 0;
+}
+```
+
+编译器扩张如下：
+
+```cpp
+Word::Word(){
+    // 调用 String(int) constructor
+    _name.String::String(0);
+    _cnt = 0;
+}
+```
+
+{% hint style="info" %}
+initialization list 种的顺序是由 class 中的 members 声明顺序决定的
+{% endhint %}
+
+```cpp
+class X{
+    int i;
+    int j;
+public:
+    X(int val):j(val),i(j){}
+};
+```
+
+上述程序代码看起来像是**要把 j 设初值为 val，再把 i 设初值为 j。**
+
+问题在于，由于声明顺序的缘故，initialization list 中的 `i(j)` 其实比 `j(val)` 更早执行。但因为 `j` 一开始未有初值，所以 `i(j)` 的执行结果导致 `i` 无法预知其值。
+
+{% hint style="info" %}
+目前可以对此问题做出警告的编译器好像只有 g++？（GNU C++编译器）
+{% endhint %}
+
+```cpp
+X::X(int val):j(val){
+    i = j;
+}
+```
+
+> j 的初始化被安排在 explicit user assignment 之前还是之后呢？
+
+**initialization list 的项目被安放在 explicit user code 之前**
 
 
 
@@ -522,3 +724,5 @@ public:
 
 
 
+
+[^1]: 当用类似 X x1(x0); 或 X x2 = x0; 这样的语法初始化对象时，编译器会对代码进行必要的程序转换（program transformation），其目的是将这些初始化操作重新解释为对 拷贝构造函数（copy constructor） 的显式调用

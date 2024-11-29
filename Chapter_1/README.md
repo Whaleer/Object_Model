@@ -58,7 +58,7 @@ C++在布局以及存取时间上的主要的额外负担是由 virtual 引起�
 * **virtual base class ：**&#x7528;以实现“多次出现在继承体系中的 base class，有一个单一而被共享的实例”。（虚继承）
 {% endhint %}
 
-### 1.1 C++ 对象模式
+## 1.1 C++ 对象模式
 
 **两种 class data members ：**&#x73;tatic 和 non-static
 
@@ -105,11 +105,7 @@ cout << sizeof(Point) << endl; // 16
 
 
 
-
-
-
-
-### 1.3 对象的差异
+## 1.3 对象的差异
 
 C++程序设计模型支持三种 **programming paradigms**
 
@@ -170,7 +166,7 @@ if(circle *pc = dynamic_cast<circle*>(ps))...
 * 为了满足数据对齐(alignment) 和填补(padding) 上去的空间
 * 为了支持 virtual 而由内部产生的任何额外负担
 
-#### :star2: 指针的类型
+### :star2: 指针的类型
 
 <mark style="background-color:yellow;">一个指针，不管它指向哪一种数据类型，指针本身所需的内存大小是固定的。</mark>
 
@@ -248,7 +244,7 @@ int main(){
 ```
 {% endcode %}
 
-#### 加入多态之后（Adding Polymorphism）
+### 加入多态之后（Adding Polymorphism）
 
 ```cpp
 class ZooAnimal {
