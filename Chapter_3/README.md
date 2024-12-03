@@ -42,9 +42,48 @@ int main(){
 除了虚表指针，X 的大小（1 字节）仍然被保留，但它的存储不直接反映在 Y 和 Z 的对象布局中，因为虚基类的内存是由最下层的最终派生类 A 来共享的。
 
 2. **编译器对于特殊情况所提供的优化处理**
+
+Virtual base class X subobject 的1 bytes 大小也出现在 class Y 和 Z 身上。传统上它被放在 derived class的固定（不变动）部分的尾端。
+
+**某些编译器会对 empty virtual base class 提供特珠支持。**&#x4E66;上的计算并没有这个支持。
+
+所以这里会计算 1 byte 的大小
+
 3. **Alignment 的限制**
 
-> **A 的大小为什么为16？**
+class Y 和 Z 的大小截至目前为5 bytes。在大部分 机器上，聚合的结构体大小会受到 alignment 的限制，使它们能够更有效率地在内存中被存取。在来信读者的机器上，alignment是 4 bytes，所以class Y 和Z必须填补3 bytes。最终得到的结果就是8bytes。
+
+<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p>书上展现的 X, Y, Z 的布局</p></figcaption></figure>
+
+#### Empty virtual base class
+
+在空基类被继承后，子类会优化掉基类的1字节的大小。
+
+> **书上 A 的大小为什么为12？ 本地为什么为 16？**
+
+**class A 的大小组成（书上）：**
+
+* 共享的唯一一个 class X 实例，大小为 1 byte；
+* Base class Y 的大小，[减去 <mark style="color:blue;">**“因 virtual base class X 而配置”**</mark> 的大小](#user-content-fn-1)[^1]，结果是 4 bytes；
+* class A 自己的大小：0 byte；
+* alignment。前面一共是 9 bytes， padding 3 bytes。最后就是 12 bytes。
+
+**class A 的大小组成（本地）：**
+
+本地 64 位机器，指针大小为 8 byte
+
+class Y 的 vbptr + class Z 的 vbptr = 16 bytes
+
+#### 一些总结：
+
+1. static data members 被放置在程序的一个 global data segment 中，不会影响个别的 class object 的大小。
+2. 每一个 class object 必须拥有足够大的大小以容纳它所有的 non-static data members, 它可能比想象的更大，原因是：
+   1. 由编译器自动加上的额外的 data members（用于支持 virtual 特性）
+   2. alignment 的需要
+
+***
+
+## 3.1 Data Member 的绑定
 
 
 
@@ -70,3 +109,14 @@ int main(){
 
 
 
+
+
+
+
+
+
+
+
+
+
+[^1]: &#x20;这里存在遗留问题，为什么要减去？

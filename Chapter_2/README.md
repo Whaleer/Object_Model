@@ -264,7 +264,7 @@ void foo(A * pa){
 
 {% stepper %}
 {% step %}
-### 显式地以一个 object 的内容作为另一个 class object 的初值
+#### 显式地以一个 object 的内容作为另一个 class object 的初值
 
 ```cpp
 Class X{...};
@@ -274,7 +274,7 @@ X x_2 = x_1;
 {% endstep %}
 
 {% step %}
-### object 作为参数传递给某个函数时
+#### object 作为参数传递给某个函数时
 
 ```cpp
 extern void foo(X x);
@@ -286,7 +286,7 @@ void bar(){
 {% endstep %}
 
 {% step %}
-### 当函数返回一个 class object 时
+#### 当函数返回一个 class object 时
 
 ```cpp
 X foo_bar(){
@@ -434,7 +434,7 @@ Bear winnie = yogi;
 
 yogi 会被 default Bear constructor 初始化。而在 constructor 中，yogi 的 vptr 被设定指向 Bear class 的 virtual table（靠编译器安插的代码完成）。因此，把yogi的 vptr 值拷贝给 winnie 的 vptr 是安全的。
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p>yogi 和 winnie 的关系</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption><p>yogi 和 winnie 的关系</p></figcaption></figure>
 
 当一个 base class object 以其 derived class 的 object 内容做初始化操作时，其 vptr 复制操作也必须保证安全，例如：
 
@@ -458,7 +458,7 @@ void foo(){
 }
 ```
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 通过 franny 调用 virtual function `draw()`，调用的是 ZooAnimal 实例而非 Bear 实例（甚至虽然 franny是以 Bear object yogi 作为初值），因为 franny 是一个 ZooAnimal object。
 
