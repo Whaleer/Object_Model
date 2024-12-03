@@ -53,7 +53,7 @@ Virtual base class X subobject 的1 bytes 大小也出现在 class Y 和 Z 身�
 
 class Y 和 Z 的大小截至目前为5 bytes。在大部分 机器上，聚合的结构体大小会受到 alignment 的限制，使它们能够更有效率地在内存中被存取。在来信读者的机器上，alignment是 4 bytes，所以class Y 和Z必须填补3 bytes。最终得到的结果就是8bytes。
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p>书上展现的 X, Y, Z 的布局</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption><p>书上展现的 X, Y, Z 的布局</p></figcaption></figure>
 
 #### Empty virtual base class
 
@@ -186,6 +186,180 @@ origin._y = 0.0;
 在 C++继承模型中，一个 derived class object 所表现出来的东西，是其自己的 members 加上其 base class（es） members 的总和。
 
 derived class members 和 base class（es） members 的排列顺序，则并未在 C++ Standard 中强制指定；理论上编译器可以自由安排之。**在大部分编译器上头，base class members 总是先出现，但属于virtual base class 的除外（一般而言，任何一条通则一旦碰上 virtual base class 就没辙了，这里亦不例外）。**
+
+来看下面两个抽象类
+
+```cpp
+class Point2d{
+public:
+    // constructors
+    // operations
+    // access functions
+private:
+    float x, y;
+};
+
+class Point3d{
+public:
+    // constructors
+    // operations
+    // access functions
+private:
+    float x, y, z;
+};
+```
+
+**下面将讨论四种不同的情况：**
+
+### 1. 单一继承且不含 virtual function
+
+我们或许希望，无论是2D还是3D坐标点，都能够共享同一个实例，但又能够继续使用 “与类型性质相关” 的实例。
+
+一个设计策略：就是从 Point2 派生出一个 Point3d
+
+一般而言，**具体继承**相对于**虚拟继承**并不会增加空间或存取时间上的额外负担
+
+```cpp
+class Point2d{
+public:
+    Point2d(float x = 0.0, float y = 0.0):_x(x),_y(y){}
+    float x() {return _x;}
+    float y() {return _y;}
+
+    void x(float newX) {_x = newX;}
+    void y(float newY) {_y = newY;}
+
+    void operator+=(const Point2d & rhs){
+        _x += rhs._x;
+        _y += rhs._y;
+    }
+protected:
+    float _x,_y;
+};
+
+class Point3d: public Point2d{
+public:
+    Point3d(float x = 0.0, float y = 0.0, float z = 0.0):Point2d(x,y),_z(z){}
+
+    float z() {return _z;}
+    void z(float newZ) {_z = newZ;}
+
+    void operator+=(const Point3d & rhs){
+        Point2d::operator+=(rhs);
+        _z += rhs._z;
+    }
+protected:
+    float _z;
+};
+```
+
+**这样设计的两个好处：**
+
+* 可以把管理 x 和 y 坐标的程序代码局部化
+* 可以明显表现出两个抽象类之间的紧密关系
+
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption><p>单一继承，没有 virtual function 的布局</p></figcaption></figure>
+
+**把两个原本独立不相干的 classes 凑成一对 “type/subtype”，并带有继承关系，会有什么易犯的错误呢**
+
+* 经验不足的人可能会重复设计一些相同操作的函数。以我们例子中的 constructor 和 operator+=为例，它们并没有被做成 inline 函数（也可能是编译器为了某些理由没有支持 inline member functions）。Point3d object 的初始化操作或加法操作，将需要部分的 Point2d object 和部分的 Point3d object 作为成本。一般而言，选择某些函数做成inline 函数，是设计 class 时的一个重要课题。
+* &#x20;第二个易犯的错误是，把一个 class 分解为两层或更多层，有可能会为了 “表现 class 体系之抽象化” 而膨胀所需的空间。C++语言保证 **“出现在 derived class中的 base class subobjeet 有其完整原样性”**，正是重点所在。
+
+来看一个具体的例子：
+
+```cpp
+class Concrete {
+public:
+private:
+    int val;
+    char c1;
+    char c2;
+    char c3;
+};
+
+cout << sizeof(Concrete) << endl; // 8
+```
+
+每一个 Concrete class object 的大小都是 8 bytes：
+
+* val 占用 4 bytes；
+* c1, c2, c3 分别占用 1 byte；
+* alignment 需要 1 byte；
+
+现在把 Concrete 分裂成三层结构：
+
+```cpp
+class Concrete1{
+public:
+private:
+    int val;
+    char bit1;
+};
+
+class Concrete2: public Concrete1{
+public:
+private:
+    char bit2;
+};
+
+class Concrete3: public Concrete2{
+public:
+private:
+    char bit3;
+};
+
+cout << sizeof(Concrete1) << endl; // 8
+cout << sizeof(Concrete2) << endl; // 8
+cout << sizeof(Concrete3) << endl; // 8
+```
+
+**书上 Concrete1，Concrete2，Concrete3 大小分别为 8, 12, 16 bytes**
+
+**Concrete1 很简单：**&#x76;al 和 bit1 加起来是 5 bytes，padding 为 3 bytes。
+
+**Concrete2：**&#x62;it2 实际上是被放在 padding 之后的，于是大小为 12 bytes。
+
+**Concrete3：**&#x4EA6;是如此，大小为 16 bytes。
+
+<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p><strong>Concrete1，Concrete2，Concrete3 对象布局</strong></p></figcaption></figure>
+
+现在声明以下一组指针：
+
+```cpp
+Concrete2 *pc2;
+Concrete1 *pc1_1, *pc1_2;
+
+*pc1_2 = *pc1_1;
+```
+
+`*pc1_2 = *pc1_1;`应该执行一个**默认的 memberwise 复制操作**。如果 pc1\_1 实际指向一个 Concrete2 object 或 Concrete3 object, 则上述操作应该将复制内容指定给其 Concrete1 subobject。
+
+<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption><p><strong>如果不维持 base class subobject 的原样性，会发生什么？</strong></p></figcaption></figure>
+
+**接下来，我们分析为什么本地三个类的大小都是8？**
+
+```bash
+(lldb) print &temp.val
+(int *) 0x000000016fdff158
+(lldb) print &temp.bit1
+(char *) 0x000000016fdff15c "\U00000001"
+(lldb) print &temp.bit2
+(char *) 0x000000016fdff160 ""
+(lldb) print &temp.bit3
+(char *) 0x000000016fdff15e ""
+```
+
+`temp.val` 的地址是 0x000000016fdff158
+
+输出的 (int \*) 表示调试器将该地址视为一个整数类型的指针：这意味着从这个地址开始，接下来的4个字节都属于 `temp.val`
+
+我们将 `temp.bit1` 的地址与 `temp.val` 的地址相减：结果为 4。正好是 int 所占的大小
+
+
+
+### 2. 单一继承并含 virtual function
+
+
 
 
 
