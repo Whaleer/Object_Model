@@ -85,6 +85,112 @@ class Y 的 vbptr + class Z 的 vbptr = 16 bytes
 
 ## 3.1 Data Member 的绑定
 
+这一节的内容暂且略过。
+
+
+
+## 3.2 Data Member 的布局
+
+来看下面这组 data members:
+
+```cpp
+class Point3d{
+public:
+...
+private:
+    float x;
+    static List<Point3d*> * freeList;
+    float y;
+    static const int chunkSize = 250;
+    float z;
+};
+```
+
+non-static data members 在 class object 中的排列顺序将和其被声明的顺序一样，任何中间介入的 static data members 都不会被放进对象布局之中。
+
+C++ Standard 要求，在同一个 access section（也就是 private、public、protected 等区段）中，members 的排列只需符合 <mark style="background-color:blue;">**“较晚出现的 members 在 class object 中有较高的地址”**</mark> 这一条件即可。
+
+编译器还可能会合成一些内部使用的 data members，以支持整个对象模型。vptr 就是这样的东西，目前所有的编译器都把它安插在每一个 “内含 virtual function 之class” 的object内。
+
+**vptr会被放在什么位置呢？**
+
+* 传统上它被放在所有显式声明的members 的最后。
+* **如今也有一些编译器把 vptr 放在一个 class object 的最前端。**&#x20;
+
+***
+
+## 3.3 Data Member 的存取
+
+```cpp
+Point3d origin, *pt = &origin;
+origin.x = 0.0;
+pt->x = 0.0;
+```
+
+下面会分析这两种不同的存取方式的差异。
+
+### Static Data Members
+
+每一个 static data member 只有一个实例，存放在程序的 data segment 之中。每次程序参阅（取用）static member 时，就会被内部转化为对该唯一extern 实例的直接参考操作。
+
+若取一个 static data member 的地址，会得到一个指向其数据类型的指针，而不是一个指向其 class member 指针，因为 static member 并不内含在一个 class object 之中。
+
+### Non-static Data Members
+
+Non-static Data Members 直接存放在每一个 class object 之中。
+
+除非经由 **显式的(explicit)** 或 **隐式的(implicit)** class object，否则没有办法直接存取它们。
+
+只要程序员在一个 member function 中直接处理一个 non-static data member, 所谓 “implicit class object” 就会发生：
+
+```cpp
+Point3d Point3d::translate(const Point3d &pt){
+    x += pt.x;
+    y += pt.y;
+    z += pt.z;
+}
+```
+
+表面上所看到的对于 x、y、z 的直接存取，事实上是经由一个 <mark style="background-color:blue;">**“implicit class object”（由this 指针表达）**</mark>完成的。事实上这个函数的参数是：
+
+```cpp
+// member function 的内部转化 
+Point3d Point3d::translate( Point3d *const this, const Point3d &pt){
+    this->x += pt.x; 
+    this->y += pt.y; 
+    this->z += pt.z; 
+}
+```
+
+欲对一个 non-static data member 进程存取操作，编译器需要把 class object 的起始地址加上 data member 的偏移位置(offset)。 举个例子，如果：
+
+```cpp
+origin._y = 0.0;
+```
+
+那么地址 `&origin._y` 将等于：
+
+```cpp
+&origin + (&Point3d::_y - 1);
+```
+
+指向 data member 的指针，**其 offset 总是加上 1，**&#x8FD9;样可以使编译器区分出下面两种情况：
+
+* 一个指向 data member 的指针，用于指出 class 的第一个 member
+* 一个指向 data member 的指针，没有指出任何 member
+
+***
+
+## 3.4 "继承" 与 Data Member
+
+在 C++继承模型中，一个 derived class object 所表现出来的东西，是其自己的 members 加上其 base class（es） members 的总和。
+
+derived class members 和 base class（es） members 的排列顺序，则并未在 C++ Standard 中强制指定；理论上编译器可以自由安排之。**在大部分编译器上头，base class members 总是先出现，但属于virtual base class 的除外（一般而言，任何一条通则一旦碰上 virtual base class 就没辙了，这里亦不例外）。**
+
+
+
+
+
 
 
 
