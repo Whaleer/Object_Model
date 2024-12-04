@@ -258,7 +258,7 @@ protected:
 * 可以把管理 x 和 y 坐标的程序代码局部化
 * 可以明显表现出两个抽象类之间的紧密关系
 
-<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption><p>单一继承，没有 virtual function 的布局</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption><p>单一继承，没有 virtual function 的布局</p></figcaption></figure>
 
 **把两个原本独立不相干的 classes 凑成一对 “type/subtype”，并带有继承关系，会有什么易犯的错误呢**
 
@@ -321,7 +321,7 @@ cout << sizeof(Concrete3) << endl; // 8
 
 **Concrete3：**&#x4EA6;是如此，大小为 16 bytes。
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption><p><strong>Concrete1，Concrete2，Concrete3 对象布局</strong></p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption><p><strong>Concrete1，Concrete2，Concrete3 对象布局</strong></p></figcaption></figure>
 
 现在声明以下一组指针：
 
@@ -445,19 +445,36 @@ private:
 no_virts *p = new has_virts;
 ```
 
-<figure><img src="../.gitbook/assets/image.png" alt="" width="563"><figcaption><p>cfront：vptr 被放在 class 的尾端</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1).png" alt="" width="563"><figcaption><p><strong>图3.2a:</strong> cfront中，vptr 被放在 class 的尾端</p></figcaption></figure>
 
 {% hint style="info" %}
 把 vptr 放在 class object 的尾端，可以保留 base class C struct 的对象布局，因而 允许在C程序代码中也能使用。这种做法在C++最初问世时，被许多人采用。
 {% endhint %}
 
-<figure><img src="../.gitbook/assets/image (1).png" alt="" width="563"><figcaption><p>后面的一些编译器：vptr 被放在 class 的前端</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt="" width="563"><figcaption><p><strong>图3.2b:</strong> 后面的一些编译器：vptr 被放在 class 的前端</p></figcaption></figure>
 
+<figure><img src="../.gitbook/assets/image.png" alt="" width="563"><figcaption><p><strong>图3.3：</strong>Point2d 和 Point3d 加上了 virtual function 之后的继承布局</p></figcaption></figure>
 
+### 3. 多重继承
 
+单一继承提供了一种 “自然多态” 形式，是关于 classes 体系中的 base type 和 derived type 之间的转换。
 
+以上的3张图，可以看到， base class 和 derived class 的 objects 都是从相同的地址开始，其间差异只在于 derived object 比较大，用以容纳它自己的 non-static data members。
 
+下面这种指定操作：
 
+```cpp
+Point3d p3d;
+Point2d * p = &p3d;
+```
+
+把一个 derived class object 指定给 base class 的指针或引用。
+
+这个操作并不需要编译器去调停或修改地址。它很自然地可以发生，而且提供了最佳执行效率。
+
+图3.2b 把 vptr 放在 class object 的起始处。如果 base class 没有 virtual function 而 derived class 有（正如图3.2b所示），那么**单一继承的自然多态 （natural polymorphism）**&#x5C31;会被打破。这种情况下，把一个 derived object 转换为其 base 类型，就需要编译器的介入，用以调整地址（因vptr 插入之故）。在既是多重继承又是虚拟继承的情况下，编译器的介入更有必要。&#x20;
+
+多重继承既不像单一继承，也不容易模塑出其模型。多重继承的复杂度在于derived class 和其上一个 base class 乃至于上上一个 base class 之间的“非自然”关系。例如，考虑下面这个多重继承所获得的 class Vertex3d：
 
 
 
