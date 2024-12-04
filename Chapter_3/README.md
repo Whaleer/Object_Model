@@ -258,7 +258,7 @@ protected:
 * 可以把管理 x 和 y 坐标的程序代码局部化
 * 可以明显表现出两个抽象类之间的紧密关系
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption><p>单一继承，没有 virtual function 的布局</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption><p>单一继承，没有 virtual function 的布局</p></figcaption></figure>
 
 **把两个原本独立不相干的 classes 凑成一对 “type/subtype”，并带有继承关系，会有什么易犯的错误呢**
 
@@ -321,7 +321,7 @@ cout << sizeof(Concrete3) << endl; // 8
 
 **Concrete3：**&#x4EA6;是如此，大小为 16 bytes。
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption><p><strong>Concrete1，Concrete2，Concrete3 对象布局</strong></p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption><p><strong>Concrete1，Concrete2，Concrete3 对象布局</strong></p></figcaption></figure>
 
 现在声明以下一组指针：
 

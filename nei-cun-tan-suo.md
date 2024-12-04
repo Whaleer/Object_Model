@@ -9,6 +9,45 @@ icon: chess-rook-piece
 * macOS Sequoia&#x20;
 * Clion + g++-14 (Homebrew GCC 14.2.0\_1) 14.2.0&#x20;
 
+***
+
+### 简单对象内存布局
+
+```cpp
+class Basic {
+public:
+    int a;
+    double b;
+};
+
+int main() {
+    Basic temp;
+    temp.a = 10;
+    return 0;
+}
+```
+
+我们使用 lldb 查看对象内存布局
+
+```cpp
+(lldb) p &temp
+(Basic *) 0x000000016fdff150
+
+(lldb) p &temp.a
+(int *) 0x000000016fdff150
+
+(lldb) p &temp.b
+(double *) 0x000000016fdff158
+```
+
+**对象 temp 的起始地址** 和 **成员变量 a 的地址**一样，都是：`0x000000016fdff150`
+
+表明 int a 是对象 temp 中的第一个成员，位于对象的起始地址
+
+成员变量 b 的类型为 double，其地址是 `0x000000016fdff158` （a的地址+8）
+
+<figure><img src=".gitbook/assets/image.png" alt=""><figcaption><p>temp 的内存布局</p></figcaption></figure>
+
 ### access 对于对象布局的影响
 
 ```cpp
