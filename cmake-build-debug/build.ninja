@@ -49,11 +49,11 @@ cmake_ninja_workdir = /Users/bingxil/Desktop/Coding/CPP/Basic$ Code/CPP_object_m
 
 build cmake_object_order_depends_target_CPP_object_model: phony || CMakeFiles/CPP_object_model.dir
 
-build CMakeFiles/CPP_object_model.dir/Chapter_2/05_bitwise_copy_semantics.cpp.o: CXX_COMPILER__CPP_object_model_unscanned_Debug /Users/bingxil/Desktop/Coding/CPP/Basic$ Code/CPP_object_model/Chapter_2/05_bitwise_copy_semantics.cpp || cmake_object_order_depends_target_CPP_object_model
-  DEP_FILE = CMakeFiles/CPP_object_model.dir/Chapter_2/05_bitwise_copy_semantics.cpp.o.d
+build CMakeFiles/CPP_object_model.dir/Chapter_3/08_split_concrete.cpp.o: CXX_COMPILER__CPP_object_model_unscanned_Debug /Users/bingxil/Desktop/Coding/CPP/Basic$ Code/CPP_object_model/Chapter_3/08_split_concrete.cpp || cmake_object_order_depends_target_CPP_object_model
+  DEP_FILE = CMakeFiles/CPP_object_model.dir/Chapter_3/08_split_concrete.cpp.o.d
   FLAGS = -g -std=gnu++14 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles/CPP_object_model.dir
-  OBJECT_FILE_DIR = CMakeFiles/CPP_object_model.dir/Chapter_2
+  OBJECT_FILE_DIR = CMakeFiles/CPP_object_model.dir/Chapter_3
 
 
 # =============================================================================
@@ -63,7 +63,7 @@ build CMakeFiles/CPP_object_model.dir/Chapter_2/05_bitwise_copy_semantics.cpp.o:
 #############################################
 # Link the executable CPP_object_model
 
-build CPP_object_model: CXX_EXECUTABLE_LINKER__CPP_object_model_Debug CMakeFiles/CPP_object_model.dir/Chapter_2/05_bitwise_copy_semantics.cpp.o
+build CPP_object_model: CXX_EXECUTABLE_LINKER__CPP_object_model_Debug CMakeFiles/CPP_object_model.dir/Chapter_3/08_split_concrete.cpp.o
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.1.sdk
   OBJECT_DIR = CMakeFiles/CPP_object_model.dir
   POST_BUILD = :
