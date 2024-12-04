@@ -99,7 +99,7 @@ protected:
 cout << sizeof(Point) << endl; // 16
 ```
 
-<figure><img src="../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 接下来，加入继承（Adding Inheritance）
 

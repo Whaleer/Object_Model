@@ -258,7 +258,7 @@ protected:
 * 可以把管理 x 和 y 坐标的程序代码局部化
 * 可以明显表现出两个抽象类之间的紧密关系
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption><p>单一继承，没有 virtual function 的布局</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption><p>单一继承，没有 virtual function 的布局</p></figcaption></figure>
 
 **把两个原本独立不相干的 classes 凑成一对 “type/subtype”，并带有继承关系，会有什么易犯的错误呢**
 
@@ -321,7 +321,7 @@ cout << sizeof(Concrete3) << endl; // 8
 
 **Concrete3：**&#x4EA6;是如此，大小为 16 bytes。
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption><p><strong>Concrete1，Concrete2，Concrete3 对象布局</strong></p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption><p><strong>Concrete1，Concrete2，Concrete3 对象布局</strong></p></figcaption></figure>
 
 现在声明以下一组指针：
 
@@ -334,7 +334,7 @@ Concrete1 *pc1_1, *pc1_2;
 
 `*pc1_2 = *pc1_1;`应该执行一个**默认的 memberwise 复制操作**。如果 pc1\_1 实际指向一个 Concrete2 object 或 Concrete3 object, 则上述操作应该将复制内容指定给其 Concrete1 subobject。
 
-<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption><p><strong>如果不维持 base class subobject 的原样性，会发生什么？</strong></p></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1).png" alt=""><figcaption><p><strong>如果不维持 base class subobject 的原样性，会发生什么？</strong></p></figcaption></figure>
 
 **接下来，我们分析为什么本地三个类的大小都是8？**
 
@@ -349,21 +349,109 @@ Concrete1 *pc1_1, *pc1_2;
 (char *) 0x000000016fdff15e ""
 ```
 
-`temp.val` 的地址是 0x000000016fdff158
+`temp.val` 的地址是 `0x000000016fdff158`
 
 输出的 (int \*) 表示调试器将该地址视为一个整数类型的指针：这意味着从这个地址开始，接下来的4个字节都属于 `temp.val`
 
 我们将 `temp.bit1` 的地址与 `temp.val` 的地址相减：结果为 4。正好是 int 所占的大小
 
+•  `tmp.val` 位于 `0x000000016fdff158`（4 字节对齐）。
 
+•  `tmp.bit1` 位于 `0x000000016fdff15c`（紧随 val 后，位于基类补齐区域）。
+
+•  `tmp.bit2` 位于 `0x000000016fdff160`，并且后续 bit3 和 bit4 依次紧密排列。
+
+这些地址表明：
+
+•  编译器将 bit2, bit3, 和 bit4 放在了基类的尾部补齐字节之后。
+
+•  但这些变量的排列方式并没有影响 sizeof 的计算结果。
+
+那么，我在这里的推测是 ：**sizeof 是面向对齐规则的逻辑大小：它反映了分配给整个类对象的最小内存块，而不是精确存储所有成员的实际内存布局。**
+
+也就是说：**编译器可能认为 Concrete2 的所有成员可以被紧凑存储在基类的对齐单位内（即 8 字节），从而避免额外的内存浪费**。
 
 ### 2. 单一继承并含 virtual function
 
+```cpp
+class Point2d{
+public:
+    Point2d(float x = 0.0, float y = 0.0): _x(x), _y(y){}
+    virtual float z(){ return 0.0; }
+    virtual void z(float ) {}
 
+    virtual void operator+=(const Point2d &rhs){
+        _x += rhs.x();
+        _y += rhs.y();
+    }
+protected:
+    float _x, _y;
+};
 
+class Point3d: public Point2d{
+public:
+    Point3d(float x = 0.0, float y = 0.0, float z = 0.0): Point2d(x, y), _z(z){}
+    float z() { return _z; }
+    void z(float newZ) { _z = newZ; }
+    
+    void operator+=(const Point2d &rhs){
+        Point2d::operator+=(rhs);
+        _z += rhs.z();
+    }
+private:
+    float _z;
+};
+```
 
+对 Point2d class 带来的空间和存取时间上的额外负担：
 
+* 一个和 Point2的有关的 virtual table, 用来存放它所声明的每一个 virtual functions 的地址。这个 table 的元素个数一般而言是被声明的 virtual functions 的个数，**再加上一个或两个 slots（用以支持 runtime type identification）**
+* 在每一个 class object 中导入一个 vptr，提供执行期的链接，使每一个 object 能够找到相应的 virtual table。
+* 加强 constructor, 使它能够为 vptr 设定初值，让它指向 class 所对应的 virtual table。
+* 加强 destructor，使它能够抹除 “指向 class 所相关的 virtual table” 的 vptr。
 
+上述的 Point2d 和 Point3d 声明，最大的好处是，可以把 `operator+=` 运用在一个 Point3d 对象和一个 Point2d 对象身上：
+
+```cpp
+Point2d p2d(2.1, 2.2);
+Point3d p3d(3.1, 3.2, 3.3);
+p3d += p2d;
+
+// 得到的 p3d 的新值将是(5.2, 5.4, 3.3)
+```
+
+目前的情况是：
+
+* Point3d class object 内含一个额外的 vptr member (继承自 Point2d)
+* 多了一个 Point3d virtual table
+
+**目前 C++ 编译器领域里有一个主要的讨论题目：把 vptr 放置在 class object 的哪里会更好？**
+
+* cfront 编译器中， vptr 被放在 class object 的尾端。
+* C++2.0，开始支持虚拟继承和抽象类，并且由于面向对象范式的兴起，**某些编译器开始把 vptr 放到 class object 的开头处。**
+
+```cpp
+struct no_virts{
+    int d1, d2;
+};
+
+class has_virts: public no_virts{
+public:
+    virtual void foo();
+private:
+    int d3;
+};
+
+no_virts *p = new has_virts;
+```
+
+<figure><img src="../.gitbook/assets/image.png" alt="" width="563"><figcaption><p>cfront：vptr 被放在 class 的尾端</p></figcaption></figure>
+
+{% hint style="info" %}
+把 vptr 放在 class object 的尾端，可以保留 base class C struct 的对象布局，因而 允许在C程序代码中也能使用。这种做法在C++最初问世时，被许多人采用。
+{% endhint %}
+
+<figure><img src="../.gitbook/assets/image (1).png" alt="" width="563"><figcaption><p>后面的一些编译器：vptr 被放在 class 的前端</p></figcaption></figure>
 
 
 

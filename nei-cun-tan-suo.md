@@ -46,7 +46,7 @@ int main() {
 
 成员变量 b 的类型为 double，其地址是 `0x000000016fdff158` （a的地址+8）
 
-<figure><img src=".gitbook/assets/image.png" alt=""><figcaption><p>temp 的内存布局</p></figcaption></figure>
+<figure><img src=".gitbook/assets/image (2).png" alt=""><figcaption><p>temp 的内存布局</p></figcaption></figure>
 
 ### access 对于对象布局的影响
 
