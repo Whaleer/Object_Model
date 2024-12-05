@@ -476,9 +476,98 @@ Point2d * p = &p3d;
 
 多重继承既不像单一继承，也不容易模塑出其模型。多重继承的复杂度在于derived class 和其上一个 base class 乃至于上上一个 base class 之间的“非自然”关系。例如，考虑下面这个多重继承所获得的 class Vertex3d：
 
+```cpp
+class Point2d{
+public:
+    // 拥有 virtual 接口, 所以 Point2d 对象之中会有 vptr
+    protected:
+        float _x, _y;
+};
+
+class Point3d: public Point2d{
+public:
+    // ...
+protected:
+    float _z;
+};
+
+class Vertex{
+public:
+    // ... 拥有 virtual 接口, 所以 Vertex 对象之中会有 vptr
+protected:
+    Vertex *next;
+};
+
+class Vertex3d:public Point3d, public Vertex{
+public:
+    // ...
+protected:
+    float mumble;
+};
+```
+
+<figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption><p>多重继承，内存布局</p></figcaption></figure>
+
+```cpp
+Vertex3d v3d;
+Vertex *pv;
+Point2d *p2d;
+Point3d *p3d;
+```
+
+下面这个指定操作：
+
+```
+pv = &v3d; 
+```
+
+需要这样的内部转化：
+
+```cpp
+// 虚拟 C++ 代码
+pv = (Vertex*) (((char *)&v3d) + sizeof(Point3d));
+```
+
+而下面的指定操作：
+
+```cpp
+p2d = &v3d;
+p3d = &v3d;
+```
+
+都只需要简单的拷贝其地址就好。
 
 
 
+C++ Standard 中并没有要求 Vertex3d 中的 base classes Point3d 和 Vertex 有特定的排列顺序。
+
+原始的 cfront 编译器是根据声明顺序来排列它们的。
+
+{% hint style="info" %}
+某些编译器设计了一种优化技术，只要第二个（或者后继）base class 声明了一个 virtual function，而第一个 base class 没有，就把多个 base classes 的顺序调换。这样可以在 derived class object 中少产生一个 vptr。**这种方式并不普及**
+{% endhint %}
+
+### 4. 虚拟继承
+
+```cpp
+class ios {...}
+class istream : public virtual ios {...};
+class ostream : public virtual ios {...};
+class iostream : public istream, public ostream {...};
+```
+
+<div data-full-width="false"><figure><img src="../.gitbook/assets/image (5).png" alt="" width="375"><figcaption><p>虚拟多重继承</p></figcaption></figure></div>
+
+不论是 istream 还是 ostream 都内含一个 ios subobject。<mark style="background-color:blue;">**然而在 iostream 的对象布局中，我们只需要单一一份 ios subobject 就好。**</mark>语言层面的解决办法是导入所谓的虚拟继承。
+
+要在编译器中支持虚拟继承，实在是难度颇高。
+
+在上述 iostream 例子中，实现技术的挑战在于，要找到一个足够有效的方法，**将 `istream` 和`ostream` 各自维护的一个 ios subobject，折叠成为一个由 `iostream` 维护的单一 ios subobject，并具还可以保存 base class 和 derived class 的指针（以及references）之间的多态指定操作（polymorphism assignments）。**&#x20;
+
+一般的实现方法如下所述。Class 如果内含一个或多个 virtual base class subobjects，像 istream 那样，**将被分割为两部分：一个不变区域和一个共享区域。**
+
+* 不变区域中的数据，无论后继如何变化，总是拥有固定的 offset，所以这一部分数据可以被直接存取。
+* 共享区域，所表现出来的就是 virtual base class subobject。这部分数据的位置会因为每次的派生操作而有变换，所以它们只可以被**间接存取。**
 
 
 
