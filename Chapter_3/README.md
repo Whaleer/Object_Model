@@ -569,9 +569,86 @@ class iostream : public istream, public ostream {...};
 * 不变区域中的数据，无论后继如何变化，总是拥有固定的 offset，所以这一部分数据可以被直接存取。
 * 共享区域，所表现出来的就是 virtual base class subobject。这部分数据的位置会因为每次的派生操作而有变换，所以它们只可以被**间接存取。**
 
+```cpp
+class Point2d{
+public:
+    ...
+protected:
+    float _x, _y;
+};
+
+class Vertex: public virtual Point2d{
+public:
+    ...
+protected:
+    Vertex *next;
+};
+
+class Point3d: public virtual Point2d{
+public:
+    ...
+protected:
+    float _z;
+};
+
+class Vertex3d: public Vertex, public Point3d{
+public:
+    ...
+protected:
+    float mumble;
+};
+```
+
+<figure><img src="../.gitbook/assets/image (6).png" alt="" width="375"><figcaption><p>Point2d, Point3d, Vertex, Vertex3d 的继承体系</p></figcaption></figure>
+
+一般的布局策略：**先安排好 derived class 的不变部分，再建立起共享部分**
+
+**如何存取 class 的共享部分？**
+
+cfront 编译器会在每一个 derived class object 中安插一些指针，每一个指针指向一个 virtual base class
+
+例子：有下面的 Point3d 运算符
+
+```cpp
+void Point3d::operator+=(const Point3d &rhs){
+    _x += rhs._x;
+    _y += rhs._y;
+    _z += rhs._z;
+};
+```
+
+在 cfront 策略下，这个运算符会被内部转换为：
+
+<pre class="language-cpp"><code class="lang-cpp"><strong>__vbcPoint2d->_x += rhs.__vbcPoint2d->_x;
+</strong>__vbcPoint2d->_y += rhs.__vbcPoint2d->_y;
+_z += rhs._z;
+</code></pre>
+
+而一个 derived class 和一个 base class 的实例之间的转换，像这样
+
+```cpp
+Point2d *p2d = pv3d;
+```
+
+在 cfront 下，会变成：
+
+```cpp
+Point2d *p2d = pv3d ? pv3d->__vbcPoint2d : 0;
+```
+
+这种模型有两个问题
+
+1. 每一个对象必须针对其每一个 virtual base class 背负一个额外的指针。然而理想上我们却希望 class object 有固定的负担，不因为其 virtual baseclasses 的个数而有所变化。
 
 
 
+
+
+2. 由于虚拟继承串链的加长，导致间接存取层次的增加。这里的意思是，如果我有三层虚拟派生，我就需要三次间接存取（经由三个 virtual base class 指针）。然而理想上我们却希望有固定的存取时间，不因为虚拟派生的深度而改变。
+
+MetaWare 提到了一种方案：**将所有的虚拟基类指针（包括嵌套的）复制到派生类对象中，确保访问虚拟基类时只需要一次跳转即可。**&#x867D;然解决了存取时间问题，但会增加对象的大小。
+
+<figure><img src="../.gitbook/assets/image (7).png" alt=""><figcaption><p>3.5a 虚拟继承。使用 Pointer Strategy 所产生的数据布局</p></figcaption></figure>
 
 
 
