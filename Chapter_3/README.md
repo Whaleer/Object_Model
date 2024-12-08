@@ -638,17 +638,54 @@ Point2d *p2d = pv3d ? pv3d->__vbcPoint2d : 0;
 
 这种模型有两个问题
 
-1. 每一个对象必须针对其每一个 virtual base class 背负一个额外的指针。然而理想上我们却希望 class object 有固定的负担，不因为其 virtual baseclasses 的个数而有所变化。
+1. 每一个对象必须针对其每一个 virtual base class 背负一个额外的指针。然而理想上我们却希望 class object 有固定的负担，不因为其 virtual base classes 的个数而有所变化。
 
+针对这个问题的两个解决办法：
 
+* virtual base class table。每一个 class object 如果有一个或多个 virtual base classes, 就会由编译器安插一个指针，指向 virtual base class table。
+* 在 virtual function table 中放置 virtual base class 的 offset。
 
-
+<figure><img src="../.gitbook/assets/image (8).png" alt=""><figcaption><p>图3.5b。虚拟继承，使用 virtual table offset strategy 所产生的数据布局。</p></figcaption></figure>
 
 2. 由于虚拟继承串链的加长，导致间接存取层次的增加。这里的意思是，如果我有三层虚拟派生，我就需要三次间接存取（经由三个 virtual base class 指针）。然而理想上我们却希望有固定的存取时间，不因为虚拟派生的深度而改变。
 
 MetaWare 提到了一种方案：**将所有的虚拟基类指针（包括嵌套的）复制到派生类对象中，确保访问虚拟基类时只需要一次跳转即可。**&#x867D;然解决了存取时间问题，但会增加对象的大小。
 
 <figure><img src="../.gitbook/assets/image (7).png" alt=""><figcaption><p>3.5a 虚拟继承。使用 Pointer Strategy 所产生的数据布局</p></figcaption></figure>
+
+## 3.5 对象成员的效率
+
+
+
+## 3.6 指向 Data Members 的指针
+
+```cpp
+class Point3d{
+public:
+    virtual ~Point3d();
+    // ...
+protected:
+    static Point3d origin;
+    float x, y, z;
+};
+```
+
+每一个 Point3d class object 含有三个坐标值，依序为 x, y, z, 以及一个 vptr。
+
+static data member `origin,`被放在 class object 之外。
+
+**唯一可能因编译器不同而不同的是 vptr 的位置。所有编译器不是把 vptr 放在对象的头，就在对象的尾。**
+
+```cpp
+&Point3d::z;
+```
+
+这个操作将得到 z 坐标在 class object 中的偏移位置(offset)。最低限度其值将是 x 和 y 的大小总和，因为 C++ 要求同一个 access level 中的 members 的排列顺序应该和其声明顺序相同。
+
+* 如果 vptr 放在对象的尾端，三个坐标值在对象布局中的offset 分别是0，4，8。&#x20;
+* 如果 vptr 放在对象的起头，三个坐标值在对象布局中的 offset 分别是4，8，12。&#x20;
+
+**然而若去取 data members 的地址，传回的值总是多1，也就是1，5，9或5，9， 13等等。你知道为什么 Bjarne 决定要这么做吗？**
 
 
 
