@@ -682,7 +682,7 @@ static data member `origin,`被放在 class object 之外。
 
 这个操作将得到 z 坐标在 class object 中的偏移位置(offset)。最低限度其值将是 x 和 y 的大小总和，因为 C++ 要求同一个 access level 中的 members 的排列顺序应该和其声明顺序相同。
 
-* 如果 vptr 放在对象的尾端，三个坐标值在对象布局中的offset 分别是0，4，8。&#x20;
+* 如果 vptr 放在对象的尾端，三个坐标值在对象布局中的 offset 分别是0，4，8。&#x20;
 * 如果 vptr 放在对象的起头，三个坐标值在对象布局中的 offset 分别是4，8，12。&#x20;
 
 **然而若去取 data members 的地址，传回的值总是多1，也就是1，5，9或5，9， 13等等。你知道为什么 Bjarne 决定要这么做吗？**
