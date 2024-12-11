@@ -94,9 +94,21 @@ magnitude_7Point3dFv(&obj);
 magnitude_7Point3dFv(ptr);
 ```
 
+`normalize()` 函数将被转化为：
 
-
-
+```cpp
+void normalize_7Point3dFv(register const Point3d *const this, Point3d & _result){
+    register float mag = this->magnitude();
+    
+    _result.Point3d::Point3d();
+    
+    _result._x = this->_x/mag;
+    _result._y = this->_y/mag;
+    _result._z = this->_z/mag;
+    
+    return;
+}
+```
 
 
 
