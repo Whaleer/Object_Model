@@ -2,7 +2,6 @@
 #include <cstddef>
 using namespace std;
 
-
 class Con1{
 private:
     int val;
