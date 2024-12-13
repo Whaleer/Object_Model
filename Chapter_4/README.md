@@ -254,6 +254,19 @@ public:
 protected:
     float _y;
 };
+
+class Point3d: public Point2d{
+public:
+    Point3d(float x = 0.0, float y = 0.0, float z = 0.0):Point2d(x,y), _z(z){}
+    ~Point3d();
+    
+    // override
+    Point3d & mult(float);
+    float z() const {return _z;}
+    
+protected:
+    float _z;
+};
 ```
 
 * virtual destructor ：被指派 slot 1
@@ -265,11 +278,66 @@ protected:
 
 **class Point2d 继承 Point 之后：**
 
+1. 它可以继承 base class 所声明的 virtual functions 的函数实例。正确地说是，该函数的实例的地址会被拷贝到 derived class 的 virtual table 的相对应 slot 之中。
+2. 它可以使用自己的函数实例，这表示它自己的函数实例地址必须放在对应的 slot 之中。
+3. 它可以加入一个新的 virtual function。这时候 virtual table 的尺寸会增大一个 slot，而新的函数实例地址会被放进该 slot 之中。
 
+Point2d 的 virtual table 在 slot 1 中指出 destructor, 而在 slot 2 中指出 `mult()`。它自己的 `y()` 函数实例地址放在 slot 3中，继承自 Point 的 `z()` 函数实例地址则被放在 slot 4 中。
 
+**class Point3d 以此类推**
 
+<figure><img src="../.gitbook/assets/image (11).png" alt=""><figcaption><p>4.1 Virtual table 布局</p></figcaption></figure>
 
+那么现在，执行
 
+```cpp
+ptr -> z();
+```
+
+我如何有足够的知识在编译时期设定 virtual function 的调用呢？
+
+* 一般而言，每次调用 `z()` 时，我并不知道 ptr 所指对象的真正类型。然而，我知道，经由 ptr 可以存取到该对象的 virtual table。
+* 虽然不知道哪一个 `z()` 函数实例会被调用，但我知道每一个 `z()` 函数地址都被放在 slot 4 中。
+
+a这些信息可以使得编译器可以将该调用转化为：
+
+<pre class="language-cpp"><code class="lang-cpp"><strong>(*ptr -> vptr[4])(ptr)
+</strong></code></pre>
+
+唯一一个在执行期才能知道的东西是：slot 4 所指的到底是哪一个 `z()` 函数实例？
+
+### 多重继承下的 Virtual Functions
+
+```cpp
+class Base1{
+public:
+    Base1();
+    virtual ~Base1();
+    virtual void speakClearly();
+    virtual Base1 * clone() const;
+protected:
+    float data_Base1;
+};
+
+class Base2{
+public:
+    Base2();
+    virtual ~Base2();
+    virtual void mumble();
+    virtual Base2 * clone() const;
+protected:
+    float data_Base2;
+};
+
+class Derived:public Base1,public Base2{
+public:
+    Derived();
+    virtual ~Derived();
+    virtual Derived * clone() const;
+protected:
+    char data_Derived;
+};
+```
 
 
 
