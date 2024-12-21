@@ -261,6 +261,22 @@ int main(){
 ### 加入多态之后（Adding Polymorphism）
 
 ```cpp
+class A {
+public:
+
+private:
+    enum Dances {waltz, tango, foxtrot};
+    Dances dance_known;
+};
+
+cout << sizeof(A) << endl; // 4
+```
+
+* 在 C++ 中，enum 类型通常会被编译为整数类型。具体来说，编译器会根据 enum 中值的范围选择合适的整数类型来存储。
+* Dances 枚举中有 3 个成员：waltz、tango 和 foxtrot，这些值默认是从 0 开始依次赋值的，所以它们对应的整数值分别是：0、1、2。
+* 默认情况下，enum 的底层类型是 int，这是因为 int 可以容纳这些值（即 0, 1, 2）。因此，Dances 枚举会占用 4 字节的内存（int 类型的大小）。
+
+```cpp
 class ZooAnimal {
 public:
     ZooAnimal(string name, int loc) : name(name), loc(0) {}
