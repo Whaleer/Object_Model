@@ -58,19 +58,33 @@ C++在布局以及存取时间上的主要的额外负担是由 virtual 引起�
 * **virtual base class ：**&#x7528;以实现“多次出现在继承体系中的 base class，有一个单一而被共享的实例”。（虚继承）
 {% endhint %}
 
+#### **virtual base class**
+
+一个类，只有在它被 虚继承（virtual 关键字）时，才会变成**虚拟基类（virtual base class）。**&#x865A;拟基类的关键点在于：
+
+* 它只会被构造一次。
+* 所有通过虚继承继承它的类会共享同一个基类实例。
+* 虚拟基类的构造顺序会被自动管理，通常是在最派生类的构造函数之前构造。
+
 ## 1.1 C++ 对象模式
 
 **两种 class data members ：**&#x73;tatic 和 non-static
 
 **三种 class member functions：**&#x73;tatic, non-static, virtual
 
-<mark style="color:blue;">**C++ 对象模型：**</mark>\
-<mark style="color:blue;">- non-static data members 被置于每一个 class object 之内</mark>\ <mark style="color:blue;">- static data members 被存放在个别的 class object 之外</mark>\ <mark style="color:blue;">- static 和 non-static function members 也被放在个别的 class object 之外</mark>
+**C++ 对象模型：**
+
+* non-static data members 被置于每一个 class object **之内**
+* static data members 被存放在个别的 class object **之外**
+* static 和 non-static function members 也被放在个别的 class object **之外**
 
 这里的 **「存放在个别的 class object 之外」 的意思就是：**&#x4E0D;属于任何单个类对象，而是属于整个类，并且所有该类的对象共享这份静态数据
 
-<mark style="color:blue;">**C++ 对象模型中的 virtual function：**</mark>\
-<mark style="color:blue;">- 每一个 class 一堆指向 virtual functions 的指针，放在称为</mark> <mark style="color:blue;"></mark><mark style="color:blue;">**virtual table （vtbl）**</mark><mark style="color:blue;">的表格中</mark>\ <mark style="color:blue;">- 每一个 class object 被安插一个指针，指向相关的 virtual table。这个指针被称为</mark> <mark style="color:blue;"></mark><mark style="color:blue;">**vptr。**</mark><mark style="color:blue;">vptr 的设定和重置都由每一个 class 的 constructor、destructor 和 copy assignment 运算符自动完成。 每一个 class 所关联的</mark> <mark style="color:blue;"></mark>_<mark style="color:blue;">type\_info</mark>_ <mark style="color:blue;"></mark><mark style="color:blue;">object (用以支持 runtime type identification， RTTI) 也经由 virtual table 被指出来，</mark><mark style="color:blue;">**通常放在表格的第一个 slot。**</mark>
+**C++ 对象模型中的 virtual function：**
+
+* 每一个 class 一堆指向 virtual functions 的指针，放在称为 **virtual table （vtbl）**&#x7684;表格中
+* 每一个 class object 被安插一个指针，指向相关的 virtual table。这个指针被称为 **vptr。**&#x76;ptr 的设定和重置都由每一个 class 的 constructor、destructor 和 copy assignment 运算符自动完成。&#x20;
+* 每一个 class 所关联的 _type\_info_ object (用以支持 runtime type identification， RTTI) 也经由 virtual table 被指出来，**通常放在表格的第一个 slot。**
 
 <details>
 
